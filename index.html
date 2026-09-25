@@ -1125,7 +1125,8 @@ body.home-view .hud-dot{animation:blDot 2.2s ease-in-out infinite}
   .sk-groups{grid-template-columns:1fr}
   .about-wrap{grid-template-columns:1fr}
   .h1 .gate-cards{grid-template-columns:repeat(2,1fr)}
-  /* v2.7：7 个入口 = 4+3，最后一行 3 个，无需跨行 */
+  /* v2.12：入口卡奇数张（7）时最后一张跨全行收尾，消除"最后一行孤悬 1 张" */
+  .h1 .gate-cards .gate:last-child:nth-child(odd){grid-column:1/-1}
 }
 @media (max-width:600px){
   .nav{padding:0 var(--sp-4)}
@@ -1140,6 +1141,8 @@ body.home-view .hud-dot{animation:blDot 2.2s ease-in-out infinite}
   .gate{padding:var(--sp-4)}
   .gate .g-note{font-size:13px}
   .tools-grid{grid-template-columns:repeat(2,1fr)}
+  /* v2.12：工具卡奇数张（5）最后一张跨全行收尾，防孤悬 */
+  .tools-grid .tool-card:last-child:nth-child(odd){grid-column:1/-1}
   .tool-panel{padding:var(--sp-4)}
   #gameCanvas{height:min(52vh,480px)}
   .game-hud{padding:12px 16px;font-size:11px}
