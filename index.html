@@ -2575,11 +2575,11 @@ App.ui = (function(){
     var input = document.getElementById('termInput');
     if(!box || !out || !input){ return; }
     var CMD = {
-      help:   ['whoami · works · skills · about · contact','blog · play · tools · social · github','clear · help'],
+      help:   ['whoami · works · skills · about · contact','blog · play · tools · social · github','home · clear · help'],
       whoami: ['badhope · Full-stack Developer','Agent 开发者 · 开源贡献者 · AI 前沿探索者','以代码为舟，探索 AI 前沿'],
       social: ['GitHub   github.com/X33834','GitCode  gitcode.com/badhope','Gitee    gitee.com/badhope','CSDN     blog.csdn.net/weixin_56622231','Juejin   juejin.cn/user/2350111542479753','Cnblogs  cnblogs.com/badhope']
     };
-    var routes = { works:'works', skills:'skills', about:'about', contact:'contact', blog:'blog', play:'play', tools:'tools' };
+    var routes = { home:'home', works:'works', skills:'skills', about:'about', contact:'contact', blog:'blog', play:'play', tools:'tools' };
     var lines = [], typing = false, tid = null;
     function homeOn(){ var v = document.getElementById('view-home'); return v && v.classList.contains('active'); }
     function esc(s){ return s.replace(/[<>&]/g, function(c){ return { '<':'&lt;', '>':'&gt;', '&':'&amp;' }[c]; }); }
@@ -2779,7 +2779,7 @@ App.ui = (function(){
         var t = touchTarget * W - car.w / 2;
         car.x += (t - car.x) * Math.min(1, dt * 14);
       } else {
-        var mv = speed * 2.6 * dt * dpr;
+        var mv = speed * 2.6 * dt * dpr;   /* 与障碍物 o.v*dt*dpr 同坐标系：画布像素随 dpr 翻倍，移动需同尺度缩放 */
         if(KEYS.left){ car.x -= mv; }
         if(KEYS.right){ car.x += mv; }
       }
@@ -2898,16 +2898,20 @@ App.ui = (function(){
       scoreEl.textContent = 0;
       draw(performance.now());
     }
+    var playView = document.getElementById('view-play');
+    function onPlay(){ return playView && playView.classList.contains('active'); }
     document.addEventListener('keydown', function(e){
+      if(!onPlay()){ return; }   /* v2.11：仅在游戏视图内响应，避免游戏外空格误启动隐藏循环 */
       var k = (e.key || '').toLowerCase();
-      if(k === 'arrowleft' || k === 'a'){ KEYS.left = true; }
-      if(k === 'arrowright' || k === 'd'){ KEYS.right = true; }
+      if(k === 'arrowleft' || k === 'a'){ KEYS.left = true; if(k === 'arrowleft'){ e.preventDefault(); } }
+      if(k === 'arrowright' || k === 'd'){ KEYS.right = true; if(k === 'arrowright'){ e.preventDefault(); } }
       if(e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowUp'){
         e.preventDefault();
         if(st === 'idle' || st === 'over'){ start(); }
       }
     });
     document.addEventListener('keyup', function(e){
+      /* 无条件清除按键状态：防止游戏内按住方向键中途切走导致键位残留卡死 */
       var k = (e.key || '').toLowerCase();
       if(k === 'arrowleft' || k === 'a'){ KEYS.left = false; }
       if(k === 'arrowright' || k === 'd'){ KEYS.right = false; }
@@ -3352,22 +3356,23 @@ App.ui = (function(){
         note.textContent = 'LIVE · 已同步 GitHub · 关注者 ' + (u.followers || 0);
         note.classList.add('live');
       }
-      return jget('https://api.github.com/users/X33834/repos?per_page=100&sort=updated');
-    }).then(function(list){
-      if(!Array.isArray(list)){ return; }
-      var byName = {};
-      list.forEach(function(r){ byName[(r.name || '').toLowerCase()] = r; });
-      var cards = document.querySelectorAll('.work-card');
-      Array.prototype.forEach.call(cards, function(c){
-        var repo = (c.getAttribute('data-repo') || '').toLowerCase();
-        var r = byName[repo];
-        if(r && r.updated_at){
-          var el = c.querySelector('.work-live');
-          if(el){ el.textContent = '更新 ' + r.updated_at.slice(0, 10); el.hidden = false; }
-        }
-      });
+      /* 作品卡实时徽标：独立失败处理——users 成功即 LIVE，repos 不可用不降级整个指示 */
+      jget('https://api.github.com/users/X33834/repos?per_page=100&sort=updated').then(function(list){
+        if(!Array.isArray(list)){ return; }
+        var byName = {};
+        list.forEach(function(r){ byName[(r.name || '').toLowerCase()] = r; });
+        var cards = document.querySelectorAll('.work-card');
+        Array.prototype.forEach.call(cards, function(c){
+          var repo = (c.getAttribute('data-repo') || '').toLowerCase();
+          var r = byName[repo];
+          if(r && r.updated_at){
+            var el = c.querySelector('.work-live');
+            if(el){ el.textContent = '更新 ' + r.updated_at.slice(0, 10); el.hidden = false; }
+          }
+        });
+      }).catch(function(){ /* 徽标不可用则保持现状，不影响 LIVE 指示 */ });
     }).catch(function(){
-      if(note){ note.textContent = '离线快照 · 2026-09-25'; }
+      if(note && !note.classList.contains('live')){ note.textContent = '离线快照 · 2026-09-25'; }
     });
   }
 
