@@ -178,17 +178,20 @@ body.light .nav,body.light .nav.scrolled{background:rgba(245,247,252,.72)}
 .nav-burger.open .nb-2{opacity:0}
 .nav-burger.open .nb-3{transform:translateY(-6.6px) rotate(-45deg)}
 /* v2.8：亮暗主题切换按钮（玻璃圆钮，汉堡左侧） */
-.theme-btn{
+.theme-btn,.audio-btn{
   position:relative;width:44px;height:44px;border-radius:50%;
   border:1px solid var(--border);background:var(--surface);
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;transition:border-color .3s,box-shadow .3s,transform .3s var(--ease-out);
 }
-.theme-btn:hover{border-color:rgba(34,211,238,.5);box-shadow:0 0 18px rgba(34,211,238,.16)}
-.theme-btn svg{width:19px;height:19px;stroke:var(--text-2);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;transition:stroke .3s,transform .35s var(--ease-out)}
-.theme-btn:hover svg{stroke:var(--neon-cyan)}
-.theme-btn svg.off{display:none}
+.theme-btn:hover,.audio-btn:hover{border-color:rgba(34,211,238,.5);box-shadow:0 0 18px rgba(34,211,238,.16)}
+.theme-btn svg,.audio-btn svg{width:19px;height:19px;stroke:var(--text-2);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;transition:stroke .3s,transform .35s var(--ease-out)}
+.theme-btn:hover svg,.audio-btn:hover svg{stroke:var(--neon-cyan)}
+.theme-btn svg.off,.audio-btn svg.off{display:none}
+/* v2.13：音效开关开启态（青边 + 青色图标） */
+.audio-btn.on{border-color:rgba(34,211,238,.55);box-shadow:0 0 18px rgba(34,211,238,.18)}
+.audio-btn.on svg{stroke:var(--neon-cyan)}
 body.light .theme-btn svg#icoSun{display:block}
 body.light .theme-btn svg#icoMoon{display:none}
 body.theme-auto .theme-btn svg#icoAuto{display:block}
@@ -1183,6 +1186,11 @@ body.home-view .hud-dot{animation:blDot 2.2s ease-in-out infinite}
 <header class="nav" id="nav">
   <a class="logo" href="#/">NOVA</a>
   <div class="nav-actions">
+    <!-- v2.13 沉浸氛围音开关（引擎低鸣 + 交互音效；显式开启，记忆选择） -->
+    <button class="audio-btn" id="audioBtn" type="button" aria-label="开启沉浸音效">
+      <svg id="icoSndOn" class="off" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 6a9 9 0 0 1 0 12"/></svg>
+      <svg id="icoSndOff" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M16 9l5 6M21 9l-5 6"/></svg>
+    </button>
     <!-- v2.8 亮暗主题（v2.9 三态：暗/亮/跟随系统，localStorage 记忆） -->
     <button class="theme-btn" id="themeBtn" type="button" aria-label="暗色主题（点击切换亮色）">
       <svg id="icoMoon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
@@ -2663,6 +2671,72 @@ App.ui = (function(){
     });
   }
 
+  /* ---- v2.13 沉浸氛围音：引擎低鸣 + 交互轻反馈（显式开关、记忆、可降级） ---- */
+  function setupAudio(){
+    var btn = document.getElementById('audioBtn');
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if(!btn || !AC){ if(btn){ btn.style.display = 'none'; } return; }
+    var ctx = null, master = null, on = false;
+    try { on = localStorage.getItem('nova-audio') === '1'; } catch(e){}
+    function ensure(){
+      if(ctx){ return; }
+      ctx = new AC();
+      master = ctx.createGain();
+      master.gain.value = 0.15;
+      master.connect(ctx.destination);
+      var o1 = ctx.createOscillator(); o1.type = 'sine'; o1.frequency.value = 42;
+      var g1 = ctx.createGain(); g1.gain.value = 0.5;
+      var lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.7;
+      var lg = ctx.createGain(); lg.gain.value = 0.16;
+      lfo.connect(lg); lg.connect(g1.gain);
+      o1.connect(g1); g1.connect(master);
+      var o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = 83.7;
+      var g2 = ctx.createGain(); g2.gain.value = 0.2;
+      o2.connect(g2); g2.connect(master);
+      o1.start(); lfo.start(); o2.start();
+    }
+    function blip(freq, dur, vol){
+      if(!ctx || !master){ return; }
+      var o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(vol || 0.05, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (dur || 0.12));
+      o.connect(g); g.connect(master);
+      o.start(); o.stop(ctx.currentTime + (dur || 0.12) + 0.02);
+    }
+    function paint(v){
+      btn.classList.toggle('on', v);
+      document.getElementById('icoSndOn').classList.toggle('off', !v);
+      document.getElementById('icoSndOff').classList.toggle('off', v);
+      btn.setAttribute('aria-label', v ? '关闭沉浸音效' : '开启沉浸音效');
+    }
+    function setOn(v){
+      on = v;
+      paint(v);
+      if(v){
+        ensure();
+        if(ctx.state === 'suspended'){ ctx.resume(); }
+        blip(660, 0.1, 0.06);
+      } else if(ctx){
+        blip(330, 0.12, 0.05);
+        ctx.suspend && ctx.suspend();
+      }
+      try { localStorage.setItem('nova-audio', v ? '1' : '0'); } catch(e){}
+    }
+    btn.addEventListener('click', function(){ setOn(!on); });
+    document.addEventListener('click', function(e){
+      if(!on || !ctx){ return; }
+      if(e.target.closest('#audioBtn')){ return; }
+      if(e.target.closest('a') || e.target.closest('button')){ blip(880, 0.06, 0.035); }
+    }, { capture:true });
+    document.addEventListener('visibilitychange', function(){
+      if(!ctx || !on){ return; }
+      if(document.hidden){ ctx.suspend && ctx.suspend(); }
+      else { ctx.resume && ctx.resume(); }
+    });
+    if(on){ paint(true); }
+  }
+
   /* ---- v2.8 亮暗主题（v2.9 升级三态：暗 / 亮 / 跟随系统，localStorage 记忆） ---- */
   function setupTheme(){
     var btn = document.getElementById('themeBtn');
@@ -3148,6 +3222,7 @@ App.ui = (function(){
     setupGame();       /* v2.7 组件：离线小游戏 NOVA DRIVE */
     setupTools();      /* v2.7 组件：离线开发者工具台 */
     setupTheme();      /* v2.8 组件：亮暗主题切换 */
+    setupAudio();      /* v2.13 组件：沉浸氛围音（引擎低鸣 + 交互音效） */
     tryLive();         /* v2.10 组件：运行时实时数据探测（GitHub API，失败回退快照） */
     setupScrollProg();
     /* v1.7/v2.2：背景视频——仅在联系视图激活且页面可见时播放（避免隐藏视图持续解码） */
