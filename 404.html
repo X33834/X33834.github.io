@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 · NOVA</title>
+<meta name="description" content="NOVA — 页面不存在，回到首页继续探索。">
+<style>
+  :root{
+    --bg:#07080c; --text:#e8edf6; --text-2:#9aa5b8;
+    --cyan:#4ce1ff; --violet:#a78bfa; --pink:#f472b6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei','HarmonyOS Sans SC','Noto Sans SC',-apple-system,'Segoe UI',sans-serif;
+    background:var(--bg);color:var(--text);
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;position:relative;
+  }
+  /* 星云渐变底 */
+  .bg{
+    position:fixed;inset:0;z-index:0;
+    background:
+      radial-gradient(1200px 600px at 70% -10%, rgba(167,139,250,.20), transparent 60%),
+      radial-gradient(900px 500px at 15% 110%, rgba(76,225,255,.14), transparent 60%),
+      radial-gradient(700px 400px at 85% 90%, rgba(244,114,182,.12), transparent 60%),
+      #07080c;
+  }
+  /* 星星 */
+  .stars{
+    position:fixed;inset:0;z-index:0;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.8), transparent),
+      radial-gradient(1px 1px at 40% 70%, rgba(255,255,255,.5), transparent),
+      radial-gradient(1.5px 1.5px at 60% 20%, rgba(255,255,255,.7), transparent),
+      radial-gradient(1px 1px at 80% 50%, rgba(255,255,255,.4), transparent),
+      radial-gradient(1.5px 1.5px at 30% 85%, rgba(255,255,255,.6), transparent),
+      radial-gradient(1px 1px at 70% 75%, rgba(255,255,255,.5), transparent),
+      radial-gradient(1px 1px at 90% 15%, rgba(255,255,255,.6), transparent),
+      radial-gradient(1px 1px at 12% 55%, rgba(255,255,255,.4), transparent);
+    animation:twinkle 4s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle{from{opacity:.7}to{opacity:1}}
+  /* 极光扫动 */
+  .aurora{
+    position:fixed;left:-20%;right:-20%;top:-10%;height:45%;z-index:0;
+    background:linear-gradient(115deg, transparent 20%, rgba(76,225,255,.10) 40%, rgba(167,139,250,.14) 55%, rgba(244,114,182,.08) 70%, transparent 82%);
+    filter:blur(38px);animation:drift 9s ease-in-out infinite alternate;
+  }
+  @keyframes drift{from{transform:translateX(-4%) rotate(.5deg)}to{transform:translateX(5%) rotate(-.5deg)}}
+  .card{
+    position:relative;z-index:1;text-align:center;padding:48px;
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+    border-radius:20px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    box-shadow:0 30px 80px rgba(0,0,0,.5);
+    animation:rise .9s cubic-bezier(.22,1,.36,1) both;
+    max-width:min(88vw,520px);
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+  .code{
+    font-family:Consolas,'Courier New',monospace;
+    font-size:clamp(64px,16vw,110px);line-height:1;font-weight:700;
+    background:linear-gradient(120deg,var(--cyan),var(--violet),var(--pink));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    letter-spacing:.05em;
+  }
+  h1{font-size:clamp(18px,4vw,24px);font-weight:600;margin:18px 0 10px;letter-spacing:.02em}
+  p{color:var(--text-2);font-size:14px;line-height:1.7;letter-spacing:.02em}
+  .btn{
+    display:inline-block;margin-top:26px;padding:11px 34px;border-radius:999px;
+    font-size:14px;letter-spacing:.12em;text-decoration:none;color:#060a10;
+    background:linear-gradient(120deg,var(--cyan),var(--violet));
+    box-shadow:0 10px 30px rgba(76,225,255,.25);transition:transform .3s,box-shadow .3s;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(76,225,255,.38)}
+  .hint{margin-top:18px;font-family:Consolas,'Courier New',monospace;font-size:11px;color:rgba(154,165,184,.7);letter-spacing:.18em}
+</style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+  <div class="stars" aria-hidden="true"></div>
+  <div class="aurora" aria-hidden="true"></div>
+  <main class="card">
+    <div class="code">404</div>
+    <h1>信号已偏离航向</h1>
+    <p>你访问的页面不存在，或已被折叠进星云深处。<br>回到首页，继续这次穿越。</p>
+    <a class="btn" href="/">返回首页 →</a>
+    <div class="hint">NOVA · NAVIGATION LOST</div>
+  </main>
+</body>
+</html>
