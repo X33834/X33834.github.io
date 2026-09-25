@@ -213,6 +213,14 @@ body.theme-auto .theme-btn svg#icoMoon,body.theme-auto .theme-btn svg#icoSun{dis
   opacity:.7;
 }
 .nav-panel.open{opacity:1;transform:none;pointer-events:auto}
+/* v2.14：菜单项递进入场 */
+.nav-panel.open a{animation:viewItem .38s var(--ease-out) both}
+.nav-panel.open a:nth-child(2){animation-delay:.05s}
+.nav-panel.open a:nth-child(3){animation-delay:.1s}
+.nav-panel.open a:nth-child(4){animation-delay:.15s}
+.nav-panel.open a:nth-child(5){animation-delay:.2s}
+.nav-panel.open a:nth-child(6){animation-delay:.25s}
+.nav-panel.open a:nth-child(7){animation-delay:.3s}
 .nav-panel a{
   position:relative;display:flex;align-items:center;gap:14px;
   padding:15px 22px;min-height:56px;color:var(--text-2);
@@ -244,6 +252,12 @@ body.theme-auto .theme-btn svg#icoMoon,body.theme-auto .theme-btn svg#icoSun{dis
 .view{display:none}
 .view.active{display:block;animation:viewIn .6s var(--ease-out) both}
 @keyframes viewIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+/* v2.14：视图内容交错入场（过渡下文）——eyebrow/标题/说明依次浮现，内容区随后 */
+@keyframes viewItem{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.view.active .page-head>*{animation:viewItem .5s var(--ease-out) both}
+.view.active .page-head>*:nth-child(2){animation-delay:.07s}
+.view.active .page-head>*:nth-child(3){animation-delay:.14s}
+.view.active .page>*:not(.page-bg):not(.page-head){animation:viewItem .5s var(--ease-out) both;animation-delay:.12s}
 /* v1.9：旧视图退出（配合全屏光带过场） */
 .view.leaving{animation:viewOut .26s var(--ease-in) both}
 @keyframes viewOut{to{opacity:0;transform:scale(.985);filter:blur(8px)}}
@@ -1058,6 +1072,8 @@ body.home-view .hud-dot{animation:blDot 2.2s ease-in-out infinite}
 }
 .bl-dot{width:8px;height:8px;border-radius:50%;background:var(--neon-cyan);box-shadow:0 0 10px var(--neon-cyan);animation:blDot 2.2s ease-in-out infinite}
 @keyframes blDot{0%,100%{opacity:1}50%{opacity:.35}}
+/* v2.14：博客嵌入 WAF 兜底提示（跨域 iframe 无法探测，静态提示直链入口） */
+.blog-waf-hint{margin-top:6px;font-size:11px;letter-spacing:.04em;color:var(--text-3);opacity:.8;line-height:1.6}
 /* v2.10：实时数据指示（首页数据卡下方 + 作品卡更新时间徽标） */
 .live-note{margin-top:var(--sp-5);font-size:11px;letter-spacing:.14em;color:var(--text-3);opacity:.85}
 .live-note.live{color:var(--neon-cyan);opacity:1}
@@ -1325,7 +1341,7 @@ body.home-view .hud-dot{animation:blDot 2.2s ease-in-out infinite}
       <div class="page-head">
         <p class="eyebrow">01 · PORTFOLIO</p>
         <h2 class="page-title">WORKS</h2>
-        <p class="page-desc">八个开源项目与创意工具，来自我的真实账号——点击卡片直达源码。用下方标签筛选分类。</p>
+        <p class="page-desc">十四个开源项目与创意工具，来自我的真实账号——点击卡片直达源码。用下方标签筛选分类。</p>
       </div>
       <!-- v2.7：分类筛选（全部 / AI / 前端 / 后端 / 基础设施） -->
       <div class="works-filter" id="worksFilter" role="tablist" aria-label="作品分类筛选">
@@ -1569,6 +1585,7 @@ body.home-view .hud-dot{animation:blDot 2.2s ease-in-out infinite}
             <span id="blogLiveLabel">实时博客 · 每次刷新自动更新</span>
             <span class="mono" id="blogStatus">加载中…</span>
           </div>
+          <p class="blog-waf-hint">若下方嵌入被平台安全策略（WAF）拦截，请点击左上角「打开博客 ↗」直接阅读</p>
           <div class="blog-frame" id="blogFrameBox">
             <iframe id="blogFrame" title="博客实时页" src="about:blank"></iframe>
             <!-- v2.9：博客园禁 iframe（SAMEORIGIN）→ 平台卡片降级 -->
@@ -2440,7 +2457,14 @@ App.ui = (function(){
     { name:'Awesome SkillKit', zh:'Agent Skills 场景包', desc:'27 个场景包 · 113 个 Skills，AI 工具开箱即用', tags:['Agent Skills','Prompt','Toolchain'], url:'https://gitcode.com/badhope/awesome-skillkit', star:3, cat:'ai' },
     { name:'bot4cj', zh:'基于仓颉的硬件机器人控制框架', desc:'仓颉语言驱动的硬件机器人控制框架', tags:['Cangjie','Robotics','Hardware'], url:'https://gitcode.com/badhope/bot4cj', star:8, cat:'infra' },
     { name:'Online CS Agent', zh:'在线客服 Agent 工作台', desc:'RAG + 工具调用 + 长期记忆 + 多模态 + 注入护栏', tags:['Python','RAG','Guardrails'], url:'https://gitcode.com/badhope/online-cs-agent', star:0, cat:'ai' },
-    { name:'KeBaiPay', zh:'科佰支付 · 自托管开源支付中台', desc:'个人钱包 + 商户收款 + 开放 API + 多通道对账', tags:['TypeScript','Payments','Self-hosted'], url:'https://gitcode.com/badhope/KeBaiPay', star:0, cat:'infra' }
+    { name:'KeBaiPay', zh:'科佰支付 · 自托管开源支付中台', desc:'个人钱包 + 商户收款 + 开放 API + 多通道对账', tags:['TypeScript','Payments','Self-hosted'], url:'https://gitcode.com/badhope/KeBaiPay', star:0, cat:'infra' },
+    /* v2.14：作品扩充 8→14（GitCode 实测全量项目） */
+    { name:'AI Expert Teams', zh:'101 位 AI 专家 + 52 个技能包', desc:'覆盖学术论文 / 全栈开发 / 数学建模 / 软件工程 / 视觉设计 / 内容创作', tags:['Markdown','Agent','Skills'], url:'https://gitcode.com/badhope/ai-expert-teams', star:0, cat:'ai' },
+    { name:'Iris', zh:'个人 AI 超级助手', desc:'Personal AI super-assistant——对话 / 记忆 / 任务一体化', tags:['Python','Assistant','AI'], url:'https://gitcode.com/badhope/iris', star:0, cat:'ai' },
+    { name:'CampusHub', zh:'开源校园社区小程序', desc:'发帖 / 二手交易 / 失物招领 / 表白墙 / 校园认证，开箱即用', tags:['Vue','WeChat','MiniApp'], url:'https://gitcode.com/badhope/campushub', star:0, cat:'web' },
+    { name:'TokenLens', zh:'AI Token 用量监控工具', desc:'零侵入本地透明代理 + 可视化仪表盘 + 预算告警', tags:['HTML','Proxy','Monitor'], url:'https://gitcode.com/badhope/tokenlens', star:0, cat:'ai' },
+    { name:'Dev Terminal', zh:'离线安卓编程终端', desc:'手机上的现代 IDE，离线运行 Python / Java', tags:['Kotlin','Android','IDE'], url:'https://gitcode.com/badhope/dev-terminal', star:0, cat:'infra' },
+    { name:'码上 Python', zh:'赛博朋克风离线学习终端', desc:'30 讲闯关 · assert 判题 · 变速器，离线可玩', tags:['Kotlin','Education','Offline'], url:'https://gitcode.com/badhope/mashang-python', star:0, cat:'web' }
   ];
   function renderWorks(){
     var grid = document.getElementById('worksGrid');
@@ -2682,24 +2706,39 @@ App.ui = (function(){
       if(ctx){ return; }
       ctx = new AC();
       master = ctx.createGain();
-      master.gain.value = 0.15;
+      master.gain.value = 0.32;   /* v2.14：音量 0.15→0.32，氛围音可感知 */
       master.connect(ctx.destination);
+      /* 引擎低鸣：42Hz sub + 83.7Hz 主振 + 125.5Hz 五度和声（0.7Hz LFO 轻调制） */
       var o1 = ctx.createOscillator(); o1.type = 'sine'; o1.frequency.value = 42;
       var g1 = ctx.createGain(); g1.gain.value = 0.5;
       var lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.7;
-      var lg = ctx.createGain(); lg.gain.value = 0.16;
+      var lg = ctx.createGain(); lg.gain.value = 0.18;
       lfo.connect(lg); lg.connect(g1.gain);
       o1.connect(g1); g1.connect(master);
       var o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = 83.7;
-      var g2 = ctx.createGain(); g2.gain.value = 0.2;
+      var g2 = ctx.createGain(); g2.gain.value = 0.22;
       o2.connect(g2); g2.connect(master);
-      o1.start(); lfo.start(); o2.start();
+      var o3 = ctx.createOscillator(); o3.type = 'sine'; o3.frequency.value = 125.5;
+      var g3 = ctx.createGain(); g3.gain.value = 0.12;
+      o3.connect(g3); g3.connect(master);
+      o1.start(); lfo.start(); o2.start(); o3.start();
+      /* 风声层：白噪声 → 低通 380Hz，营造驾驶气流 */
+      var nb = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+      var nd = nb.getChannelData(0);
+      for(var i = 0; i < nd.length; i++){ nd[i] = (Math.random() * 2 - 1) * 0.5; }
+      var ns = ctx.createBufferSource(); ns.buffer = nb; ns.loop = true;
+      var nf = ctx.createBiquadFilter(); nf.type = 'lowpass'; nf.frequency.value = 380; nf.Q.value = 0.7;
+      var ng = ctx.createGain(); ng.gain.value = 0.05;
+      ns.connect(nf); nf.connect(ng); ng.connect(master);
+      ns.start();
     }
-    function blip(freq, dur, vol){
+    function blip(freq, dur, vol, glide){
       if(!ctx || !master){ return; }
-      var o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
+      var o = ctx.createOscillator(); o.type = 'sine';
+      o.frequency.setValueAtTime(freq, ctx.currentTime);
+      if(glide){ o.frequency.exponentialRampToValueAtTime(glide, ctx.currentTime + (dur || 0.12)); }
       var g = ctx.createGain();
-      g.gain.setValueAtTime(vol || 0.05, ctx.currentTime);
+      g.gain.setValueAtTime(vol || 0.09, ctx.currentTime);
       g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (dur || 0.12));
       o.connect(g); g.connect(master);
       o.start(); o.stop(ctx.currentTime + (dur || 0.12) + 0.02);
@@ -2716,9 +2755,9 @@ App.ui = (function(){
       if(v){
         ensure();
         if(ctx.state === 'suspended'){ ctx.resume(); }
-        blip(660, 0.1, 0.06);
+        blip(660, 0.12, 0.08, 990);
       } else if(ctx){
-        blip(330, 0.12, 0.05);
+        blip(440, 0.14, 0.07, 330);
         ctx.suspend && ctx.suspend();
       }
       try { localStorage.setItem('nova-audio', v ? '1' : '0'); } catch(e){}
@@ -2727,8 +2766,13 @@ App.ui = (function(){
     document.addEventListener('click', function(e){
       if(!on || !ctx){ return; }
       if(e.target.closest('#audioBtn')){ return; }
-      if(e.target.closest('a') || e.target.closest('button')){ blip(880, 0.06, 0.035); }
+      if(e.target.closest('a') || e.target.closest('button')){ blip(880, 0.08, 0.09); }
     }, { capture:true });
+    /* v2.14：视图切换过渡音（上滑轻音，与过场 veil 呼应） */
+    window.addEventListener('hashchange', function(){
+      if(!on || !ctx){ return; }
+      blip(660, 0.16, 0.07, 1040);
+    });
     document.addEventListener('visibilitychange', function(){
       if(!ctx || !on){ return; }
       if(document.hidden){ ctx.suspend && ctx.suspend(); }
